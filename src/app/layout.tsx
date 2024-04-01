@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import Nav from "@/components/nav/Nav";
+import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-slate-100 max-h-full overflow-auto`}>
-        <Nav />
+        <Suspense fallback={<nav className="p-4 bg-teal-900 flex justify-between items-center sticky top-0"></nav>}>
+          <Nav />
+        </Suspense>
         <main className="p-4">{children}</main>
       </body>
     </html>
