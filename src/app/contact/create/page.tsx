@@ -1,6 +1,7 @@
 import UserForm from '@/components/UserForm/UserForm';
 import { User } from '@/model/user';
 import sql from '@/utils/db'
+import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import React from 'react'
 
@@ -16,7 +17,7 @@ function CreateUserPage() {
         const [createdUser] = await sql<User[]>`
             INSERT INTO users (name, phone, email, notes, address) VALUES (${name}, ${phone}, ${email}, ${notes}, ${address}) RETURNING *;
         `;
-
+        revalidatePath('/');
         redirect(`/contact/${createdUser.id}`);
     }
     return (

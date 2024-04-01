@@ -3,6 +3,7 @@ import UserForm from '@/components/UserForm/UserForm';
 import { User } from '@/model/user';
 import sql from '@/utils/db';
 import { EnvelopeIcon, PhoneIcon, UserIcon } from '@heroicons/react/16/solid';
+import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import React from 'react'
 
@@ -22,7 +23,23 @@ async function UserDetailPage(props: UserDetailPageProps) {
     const deleteContact = async () => {
         "use server";
         await sql<User[]>`DELETE FROM users WHERE id = ${contactID} RETURNING *;`;
+        revalidatePath('/');
         redirect('/');
+    }
+    const editContact = async (data: FormData) => {
+        "use server";
+        const name = data.get('name') as string;
+        const phone = data.get('phone') as string;
+        const email = data.get('email') as string;
+        const notes = data.get('notes') as string;
+        const address = data.get('address') as string;
+
+        await sql<User[]>`
+            UPDATE users SET name = ${name}, phone = ${phone}, email = ${email}, notes = ${notes}, address = ${address} WHERE id = ${contactID};
+        `;
+        revalidatePath(`/contact/${contactID}`);
+        revalidatePath('/');
+        redirect(`/contact/${contactID}`);
     }
     return (
         <div className='flex flex-col gap-4'>
@@ -36,20 +53,7 @@ async function UserDetailPage(props: UserDetailPageProps) {
             </div>
             {
                 edit ? (
-                    <UserForm formAction={async (data) => {
-                        "use server";
-                        const name = data.get('name') as string;
-                        const phone = data.get('phone') as string;
-                        const email = data.get('email') as string;
-                        const notes = data.get('notes') as string;
-                        const address = data.get('address') as string;
-
-                        await sql<User[]>`
-                            UPDATE users SET name = ${name}, phone = ${phone}, email = ${email}, notes = ${notes}, address = ${address} WHERE id = ${contactID};
-                        `;
-                        redirect(`/contact/${contactID}`);
-                    }
-                    } initialValues={user} />
+                    <UserForm formAction={editContact} initialValues={user} />
                 ) : (
                     <>
                         <div className='flex justify-center'>
